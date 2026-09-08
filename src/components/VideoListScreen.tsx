@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet, Text, FlatList, Pressable, Image, ImageSourcePropType } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 import axios from 'axios';
+import * as WebBrowser from 'expo-web-browser';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, ImageSourcePropType, Pressable, StyleSheet, Text, View } from 'react-native';
 
 interface VideoItem {
   id: number;
@@ -19,17 +19,17 @@ interface VideoListScreenProps {
 export default function VideoListScreen({ title, categoryId, headerImage }: VideoListScreenProps) {
   const [isLoading, setLoading] = useState(true);
   const [data, setData] = useState<VideoItem[]>([]);
-  const filteredData = data.filter(item => item.category_id === categoryId);
+  const filteredData = data.filter(item => item?.category_id === categoryId);
 
   useEffect(() => {
     axios.get('https://placements.bsms.ac.uk/api/Dissection')
       .then(({ data }) => {
-        console.log('API Response:', data);
-        setData(data)
+        console.log('Video API Response:', data);
+        setData(data || []);
       })
       .catch((error) => {
-        console.error('API Error:', error);
-        setLoading(false);
+        console.error('Video API Error:', error);
+        setData([]);
       })
       .finally(() => setLoading(false));
   }, []);

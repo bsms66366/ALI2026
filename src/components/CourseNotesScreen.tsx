@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, Text, Pressable, FlatList, StyleSheet } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 import axios from 'axios';
+import * as WebBrowser from 'expo-web-browser';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 interface NoteItem {
   id: number;
@@ -18,16 +18,19 @@ interface CourseNotesScreenProps {
 export default function CourseNotesScreen({ courseName, categoryId }: CourseNotesScreenProps) {
   const [isLoading, setLoading] = useState(true);
   const [data, setData] = useState<NoteItem[]>([]);
-  const filteredData = data.filter(item => item.category_id === categoryId);
+  const filteredData = data.filter(item => item?.category_id === categoryId);
 
   useEffect(() => {
     axios
       .get('https://placements.bsms.ac.uk/api/Notes')
       .then(({ data }) => {
-        console.log(data);
-        setData(data);
+        console.log('Course Notes API Response:', data);
+        setData(data || []);
       })
-      .catch((error) => console.error(error))
+      .catch((error) => {
+        console.error('Course Notes API Error:', error);
+        setData([]);
+      })
       .finally(() => setLoading(false));
   }, []);
 
