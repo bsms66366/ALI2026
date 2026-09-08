@@ -1,29 +1,5 @@
-import { View, Text, StyleSheet } from 'react-native';
+import ModuleNotesScreen from '@/components/ModuleNotesScreen';
 
 export default function Module203Screen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Module203Screen</Text>
-      <Text style={styles.subtitle}>Content coming soon...</Text>
-    </View>
-  );
+  return <ModuleNotesScreen moduleNumber="203" categoryId={7} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000000',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#bcba40',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#9D9D9C',
-  },
-});
