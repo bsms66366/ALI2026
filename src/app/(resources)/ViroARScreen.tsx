@@ -1,23 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Platform, NativeSyntheticEvent, ImageSourcePropType, Pressable, ActivityIndicator, Button, ViewProps } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Dimensions, ImageSourcePropType, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View, ViewProps } from 'react-native';
 // TODO: Re-enable after new development build with AsyncStorage
 // import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
 import {
-  ViroARScene,
-  ViroARSceneNavigator,
-  Viro3DObject,
-  ViroAmbientLight,
-  ViroSpotLight,
-  ViroNode,
-  ViroMaterials,
-  ViroErrorEvent,
-  ViroPinchStateTypes,
-  ViroRotateStateTypes,
+    Viro3DObject,
+    ViroAmbientLight,
+    ViroARScene,
+    ViroARSceneNavigator,
+    ViroErrorEvent,
+    ViroMaterials,
+    ViroNode,
+    ViroPinchStateTypes,
+    ViroRotateStateTypes,
+    ViroSpotLight,
 } from '@reactvision/react-viro';
+import * as FileSystem from 'expo-file-system';
+import { useLocalSearchParams } from 'expo-router';
 
 // Type for mesh loading event
 type ViroMeshLoadedEvent = {
@@ -38,7 +38,6 @@ type CustomViro3DObjectProps = ViewProps & {
   onLoadEnd?: () => void;
   onMeshesLoaded?: (event: NativeSyntheticEvent<ViroMeshLoadedEvent>) => void;
 };
-import { useLocalSearchParams, router} from 'expo-router';
 
 // Helper function to extract error message
 const getErrorMessage = (error: unknown): string => {
@@ -47,7 +46,7 @@ const getErrorMessage = (error: unknown): string => {
   return 'Unknown error occurred';
 };
 
-import { AnatomyMaterials, getModelScale, type MaterialConfig, type LightingModel } from '@/components/modelConfig';
+import { AnatomyMaterials, getModelScale } from '@/components/modelConfig';
 
 import { MeshMaterialMap } from '@/components/modelConfig';
 
@@ -84,7 +83,7 @@ const downloadModel = async (
   try {
     // Create a unique filename based on the URI
     const filename = `model_${Date.now()}_${uri.split('/').pop() || 'model.glb'}`;
-    const modelDir = `${FileSystem.documentDirectory}models/`;
+    const modelDir = `${FileSystem.cacheDirectory}models/`;
     const localUri = `${modelDir}${filename}`;
 
     // Create models directory if it doesn't exist
@@ -556,7 +555,7 @@ const ViroARScreen = () => {
         <ViroARSceneNavigator
           key="minimal"
           autofocus={true}
-          initialScene={{ scene: (MinimalScene as unknown as () => JSX.Element) }}
+          initialScene={{ scene: MinimalScene as any }}
           style={styles.arView}
         />
       ) : (
@@ -564,7 +563,7 @@ const ViroARScreen = () => {
           <ViroARSceneNavigator
             key="model"
             autofocus={true}
-            initialScene={{ scene: (ARScene as unknown as () => JSX.Element) }}
+            initialScene={{ scene: ARScene as any }}
             viroAppProps={{ modelUri: localModelUri }}
             style={styles.arView}
           />
@@ -614,7 +613,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
