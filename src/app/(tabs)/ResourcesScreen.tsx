@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View, Image, ViewStyle, TextStyle, ImageStyle, TouchableOpacity, Linking, Alert, ScrollView, useWindowDimensions } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
+import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View, ViewStyle } from 'react-native';
+// TODO: Re-enable after new development build with AsyncStorage
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView, useSafeAreaInsets, type EdgeInsets } from 'react-native-safe-area-context';
 
 const TILE_HEIGHT_PORTRAIT = 225;
@@ -30,13 +31,15 @@ export default function ResourcesScreen() {
   const insets = useSafeAreaInsets();
 
   const handleStartScanning = async () => {
-    try {
-      await AsyncStorage.removeItem('currentModelUri');
-      router.push("/ModelFetchScreen" as any);
-    } catch (error) {
-      console.error('Error clearing AsyncStorage:', error);
-      router.push("/ModelFetchScreen" as any);
-    }
+    // TODO: Re-enable AsyncStorage after new development build
+    // try {
+    //   await AsyncStorage.removeItem('currentModelUri');
+    //   router.push("/ModelFetchScreen" as any);
+    // } catch (error) {
+    //   console.error('Error clearing AsyncStorage:', error);
+    //   router.push("/ModelFetchScreen" as any);
+    // }
+    router.push("/ModelFetchScreen" as any);
   };
 
   const openApp = async (appUrl: string, fallbackUrl: string, appName: string) => {
