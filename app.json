@@ -7,7 +7,6 @@
     "icon": "./assets/images/appstore.png",
     "scheme": "ali2026",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
@@ -16,6 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cjtaylormade.ali2026",
+      "newArchEnabled": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationQueriesSchemes": ["slido", "completeanatomy", "imaios"]
@@ -27,6 +27,7 @@
         "backgroundColor": "#000000"
       },
       "package": "com.cjtaylormade.ali2026",
+      "newArchEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
