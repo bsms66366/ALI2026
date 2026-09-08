@@ -68,7 +68,9 @@ const ModelFetchScreen = () => {
       
       // Prepare to download the model
       const destination = new Directory(Paths.cache, 'models');
-      destination.create();
+      if (!destination.exists) {
+        destination.create();
+      }
       
       // Download the model with progress tracking
       console.log('Downloading model from URL:', modelUrl);
@@ -244,7 +246,9 @@ const ModelFetchScreen = () => {
 
       // Prepare destination directory
       const destination = new Directory(Paths.cache, 'models');
-      destination.create();
+      if (!destination.exists) {
+        destination.create();
+      }
 
       // Store model metadata for reference
       await AsyncStorage.setItem('currentModelMetadata', JSON.stringify({

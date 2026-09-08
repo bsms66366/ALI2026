@@ -80,7 +80,9 @@ const downloadModel = async (
   try {
     // Prepare destination directory
     const destination = new Directory(Paths.cache, 'models');
-    destination.create();
+    if (!destination.exists) {
+      destination.create();
+    }
 
     console.log('Downloading model:', uri);
     
