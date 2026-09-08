@@ -11,6 +11,7 @@ import {
     ViroRotateStateTypes,
     ViroSpotLight,
 } from '@reactvision/react-viro';
+import { Directory, File, Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Dimensions, ImageSourcePropType, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View, ViewProps } from 'react-native';
@@ -77,23 +78,13 @@ const downloadModel = async (
   onProgress: (progress: number) => void
 ): Promise<string> => {
   try {
-    // Create a unique filename based on the URI
-    const filename = `model_${Date.now()}_${uri.split('/').pop() || 'model.glb'}`;
-    const localUri = `${cacheDirectory}models/${filename}`;
+    // Prepare destination directory
+    const destination = new Directory(Paths.cache, 'models');
+    destination.create();
 
-    console.log('Downloading model:', uri, 'to', localUri);
+    console.log('Downloading model:', uri);
     
-    const result = await downloadAsync(
-      uri,
-      localUri,
-      {
-        progressCallback: (downloadProgress) => {
-          const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
-          console.log(`Download progress: ${Math.round(progress * 100)}%`);
-          onProgress(progress);
-        }
-      }
-    );
+    const result = await File.downloadFileAsync(uri, destination);
 
     if (!result?.uri) {
       throw new Error('Download failed - no URI in result');

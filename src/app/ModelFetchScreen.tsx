@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { Directory, File, Paths } from 'expo-file-system';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -66,24 +67,15 @@ const ModelFetchScreen = () => {
       }
       
       // Prepare to download the model
-      const filename = modelUrl.split('/').pop() || 'model.glb';
-      const localUri = `${cacheDirectory}models/${filename}`;
+      const destination = new Directory(Paths.cache, 'models');
+      destination.create();
       
       // Download the model with progress tracking
       console.log('Downloading model from URL:', modelUrl);
       
-      const result = await downloadAsync(
-        modelUrl,
-        localUri,
-        {
-          progressCallback: (downloadProgress) => {
-            const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
-            setDownloadProgress(progress);
-          }
-        }
-      );
+      const result = await File.downloadFileAsync(modelUrl, destination);
       
-      if (result) {
+      if (result && result.exists) {
         setShowScanner(false);
         await navigateToARScreen(result.uri, 'qr_scan');
       } else {
@@ -250,8 +242,9 @@ const ModelFetchScreen = () => {
         originalFilename = `${originalFilename}.glb`;
       }
 
-      // Local path to save the model with original filename
-      const localUri = `${cacheDirectory}models/${originalFilename}`;
+      // Prepare destination directory
+      const destination = new Directory(Paths.cache, 'models');
+      destination.create();
 
       // Store model metadata for reference
       await AsyncStorage.setItem('currentModelMetadata', JSON.stringify({
@@ -261,21 +254,12 @@ const ModelFetchScreen = () => {
         description: selectedModel.description
       }));
 
-      // Download the model with progress tracking
+      // Download the model
       console.log('Downloading model from URL:', selectedModel.url);
 
-      const result = await downloadAsync(
-        selectedModel.url,
-        localUri,
-        {
-          progressCallback: (downloadProgress) => {
-            const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
-            setDownloadProgress(progress);
-          }
-        }
-      );
+      const result = await File.downloadFileAsync(selectedModel.url, destination);
       
-      if (result) {
+      if (result && result.exists) {
         navigateToARScreen(result.uri, 'model_fetch');
       } else {
         throw new Error('Download failed');
