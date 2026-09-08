@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as FileSystem from 'expo-file-system';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -68,43 +67,27 @@ const ModelFetchScreen = () => {
       
       // Prepare to download the model
       const filename = modelUrl.split('/').pop() || 'model.glb';
-      const localUri = `${FileSystem.cacheDirectory}models/${filename}`;
+      const localUri = `${cacheDirectory}models/${filename}`;
       
-      // Create the models directory if it doesn't exist
-      const modelDir = `${FileSystem.cacheDirectory}models/`;
-      const dirInfo = await FileSystem.getInfoAsync(modelDir);
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(modelDir, { intermediates: true });
-      }
+      // Download the model with progress tracking
+      console.log('Downloading model from URL:', modelUrl);
       
-      // Check if model already exists
-      const fileInfo = await FileSystem.getInfoAsync(localUri);
-      
-      if (fileInfo.exists) {
-        // Model already downloaded
-        setShowScanner(false);
-        await navigateToARScreen(localUri, 'qr_scan');
-      } else {
-        // Download the model with progress tracking
-        console.log('Downloading model from URL:', modelUrl);
-        
-        const downloadResumable = FileSystem.createDownloadResumable(
-          modelUrl,
-          localUri,
-          {},
-          (downloadProgress) => {
+      const result = await downloadAsync(
+        modelUrl,
+        localUri,
+        {
+          progressCallback: (downloadProgress) => {
             const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
             setDownloadProgress(progress);
           }
-        );
-        
-        const result = await downloadResumable.downloadAsync();
-        if (result) {
-          setShowScanner(false);
-          await navigateToARScreen(result.uri, 'qr_scan');
-        } else {
-          throw new Error('Failed to download model');
         }
+      );
+      
+      if (result) {
+        setShowScanner(false);
+        await navigateToARScreen(result.uri, 'qr_scan');
+      } else {
+        throw new Error('Failed to download model');
       }
     } catch (error) {
       console.error('Error processing QR code:', error);
@@ -244,14 +227,6 @@ const ModelFetchScreen = () => {
     setDownloadProgress(0);
 
     try {
-      // Create directory for models if it doesn't exist
-      const modelDir = `${FileSystem.cacheDirectory}models/`;
-      const dirInfo = await FileSystem.getInfoAsync(modelDir);
-
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(modelDir, { intermediates: true });
-      }
-
       // Safety: ensure the selected URL is a GLB
       if (!selectedModel.url || !selectedModel.url.toLowerCase().endsWith('.glb')) {
         Alert.alert('Unsupported Format', 'Only .glb models are supported in AR. Please choose a GLB model.');
@@ -276,7 +251,7 @@ const ModelFetchScreen = () => {
       }
 
       // Local path to save the model with original filename
-      const localUri = `${modelDir}${originalFilename}`;
+      const localUri = `${cacheDirectory}models/${originalFilename}`;
 
       // Store model metadata for reference
       await AsyncStorage.setItem('currentModelMetadata', JSON.stringify({
@@ -286,32 +261,24 @@ const ModelFetchScreen = () => {
         description: selectedModel.description
       }));
 
-      // Check if model already exists
-      const fileInfo = await FileSystem.getInfoAsync(localUri);
+      // Download the model with progress tracking
+      console.log('Downloading model from URL:', selectedModel.url);
 
-      if (fileInfo.exists) {
-        // Model already downloaded
-        navigateToARScreen(localUri, 'model_fetch');
-      } else {
-        // Download the model with progress tracking
-        console.log('Downloading model from URL:', selectedModel.url);
-
-        const downloadResumable = FileSystem.createDownloadResumable(
-          selectedModel.url,
-          localUri,
-          {},
-          (downloadProgress) => {
+      const result = await downloadAsync(
+        selectedModel.url,
+        localUri,
+        {
+          progressCallback: (downloadProgress) => {
             const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
             setDownloadProgress(progress);
           }
-        );
-
-        const result = await downloadResumable.downloadAsync();
-        if (result) {
-          navigateToARScreen(result.uri, 'model_fetch');
-        } else {
-          throw new Error('Download failed');
         }
+      );
+      
+      if (result) {
+        navigateToARScreen(result.uri, 'model_fetch');
+      } else {
+        throw new Error('Download failed');
       }
     } catch (error) {
       console.error('Error downloading model:', error);

@@ -11,7 +11,6 @@ import {
     ViroRotateStateTypes,
     ViroSpotLight,
 } from '@reactvision/react-viro';
-import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Dimensions, ImageSourcePropType, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View, ViewProps } from 'react-native';
@@ -80,44 +79,24 @@ const downloadModel = async (
   try {
     // Create a unique filename based on the URI
     const filename = `model_${Date.now()}_${uri.split('/').pop() || 'model.glb'}`;
-    const modelDir = `${FileSystem.cacheDirectory}models/`;
-    const localUri = `${modelDir}${filename}`;
-
-    // Create models directory if it doesn't exist
-    const dirInfo = await FileSystem.getInfoAsync(modelDir);
-    if (!dirInfo.exists) {
-      console.log('Creating models directory:', modelDir);
-      await FileSystem.makeDirectoryAsync(modelDir, { intermediates: true });
-    }
-
-    // Check if we already have this model downloaded
-    const fileInfo = await FileSystem.getInfoAsync(localUri);
-    if (fileInfo.exists) {
-      console.log('Model already exists locally:', localUri);
-      return localUri;
-    }
+    const localUri = `${cacheDirectory}models/${filename}`;
 
     console.log('Downloading model:', uri, 'to', localUri);
-    const downloadResumable = FileSystem.createDownloadResumable(
+    
+    const result = await downloadAsync(
       uri,
       localUri,
-      {},
-      (downloadProgress) => {
-        const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
-        console.log(`Download progress: ${Math.round(progress * 100)}%`);
-        onProgress(progress);
+      {
+        progressCallback: (downloadProgress) => {
+          const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
+          console.log(`Download progress: ${Math.round(progress * 100)}%`);
+          onProgress(progress);
+        }
       }
     );
 
-    const result = await downloadResumable.downloadAsync();
     if (!result?.uri) {
       throw new Error('Download failed - no URI in result');
-    }
-
-    // Verify the downloaded file
-    const downloadedFileInfo = await FileSystem.getInfoAsync(result.uri);
-    if (!downloadedFileInfo.exists || downloadedFileInfo.size === 0) {
-      throw new Error('Downloaded file is empty or missing');
     }
 
     console.log('Model downloaded successfully:', result.uri);
@@ -442,35 +421,8 @@ const ViroARScreen = () => {
           throw new Error('Invalid model URI format');
         }
 
-        // Helper: validate GLB by simple checks (size and extension)
-        const validateGlb = async (uri: string) => {
-          try {
-            const info = await FileSystem.getInfoAsync(uri);
-            if (!info.exists) {
-              throw new Error('Model file not found');
-            }
-            // Require at least 1KB
-            if ((info.size || 0) < 1024) {
-              throw new Error('Downloaded file appears too small (possible corruption)');
-            }
-            // Basic extension check as a lightweight guard
-            if (!uri.toLowerCase().endsWith('.glb')) {
-              // Some URIs may not include extension if temporary; allow but warn
-              console.warn('Model URI does not end with .glb; proceeding, but loader expects GLB');
-            }
-          } catch (e) {
-            throw e;
-          }
-        };
-
         // If the URI is already a local file, use it directly
         if (modelUri.startsWith('file://')) {
-          const fileInfo = await FileSystem.getInfoAsync(modelUri);
-          if (!fileInfo.exists) {
-            throw new Error('Local model file not found');
-          }
-          // Validate GLB integrity
-          await validateGlb(modelUri);
           if (mounted.current) {
             setLocalModelUri(modelUri);
           }
@@ -484,8 +436,6 @@ const ViroARScreen = () => {
           }
         });
 
-        // Validate GLB integrity
-        await validateGlb(localUri);
         if (mounted.current) {
           setLocalModelUri(localUri);
         }
