@@ -75,7 +75,9 @@ const ModelFetchScreen = () => {
       // Download the model with progress tracking
       console.log('Downloading model from URL:', modelUrl);
       
-      const result = await File.downloadFileAsync(modelUrl, destination);
+      const result = await File.downloadFileAsync(modelUrl, destination, {
+        idempotent: true, // Overwrite if file exists
+      });
       
       if (result && result.exists) {
         setShowScanner(false);
@@ -261,7 +263,9 @@ const ModelFetchScreen = () => {
       // Download the model
       console.log('Downloading model from URL:', selectedModel.url);
 
-      const result = await File.downloadFileAsync(selectedModel.url, destination);
+      const result = await File.downloadFileAsync(selectedModel.url, destination, {
+        idempotent: true, // Overwrite if file exists
+      });
       
       if (result && result.exists) {
         navigateToARScreen(result.uri, 'model_fetch');

@@ -86,7 +86,9 @@ const downloadModel = async (
 
     console.log('Downloading model:', uri);
     
-    const result = await File.downloadFileAsync(uri, destination);
+    const result = await File.downloadFileAsync(uri, destination, {
+      idempotent: true, // Overwrite if file exists
+    });
 
     if (!result?.uri) {
       throw new Error('Download failed - no URI in result');
