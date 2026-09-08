@@ -7,15 +7,10 @@
     "icon": "./assets/images/appstore.png",
     "scheme": "ali2026",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#000000"
-    },
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cjtaylormade.ali2026",
-      "newArchEnabled": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationQueriesSchemes": ["slido", "completeanatomy", "imaios"]
@@ -27,7 +22,6 @@
         "backgroundColor": "#000000"
       },
       "package": "com.cjtaylormade.ali2026",
-      "newArchEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -37,6 +31,14 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#000000",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200
+        }
+      ],
       [
         "expo-camera",
         {
