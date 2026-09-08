@@ -1,9 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Dimensions, ImageSourcePropType, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View, ViewProps } from 'react-native';
-// TODO: Re-enable after new development build with AsyncStorage
-// import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     Viro3DObject,
     ViroAmbientLight,
@@ -17,7 +12,9 @@ import {
     ViroSpotLight,
 } from '@reactvision/react-viro';
 import * as FileSystem from 'expo-file-system';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Dimensions, ImageSourcePropType, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View, ViewProps } from 'react-native';
 
 // Type for mesh loading event
 type ViroMeshLoadedEvent = {

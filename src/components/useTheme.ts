@@ -1,8 +1,6 @@
+import { useEffect } from "react";
 import { useColorScheme as useNativeColorScheme } from "react-native";
 import { create } from "zustand";
-// TODO: Re-enable after new development build with AsyncStorage
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect } from "react";
 
 type ThemeStore = {
   theme: "light" | "dark" | "system";
@@ -13,8 +11,7 @@ const useThemeStore = create<ThemeStore>((set) => ({
   theme: "system",
   setTheme: (theme) => {
     set({ theme });
-    // TODO: Re-enable after new development build
-    // AsyncStorage.setItem('theme', theme);
+    AsyncStorage.setItem("theme", theme);
   },
 }));
 
@@ -24,12 +21,16 @@ export function useTheme() {
 
   // Load saved theme on mount
   useEffect(() => {
-    // TODO: Re-enable after new development build
-    // AsyncStorage.getItem('theme').then((savedTheme) => {
-    //   if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system')) {
-    //     setTheme(savedTheme);
-    //   }
-    // });
+    AsyncStorage.getItem("theme").then((savedTheme) => {
+      if (
+        savedTheme &&
+        (savedTheme === "light" ||
+          savedTheme === "dark" ||
+          savedTheme === "system")
+      ) {
+        setTheme(savedTheme);
+      }
+    });
   }, []);
 
   // Calculate the effective theme
