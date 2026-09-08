@@ -3,7 +3,7 @@
     "name": "ALI2026",
     "slug": "ali2026",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "landscape",
     "icon": "./assets/images/appstore.png",
     "scheme": "ali2026",
     "userInterfaceStyle": "dark",
@@ -11,9 +11,18 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cjtaylormade.ali2026",
+      "requireFullScreen": false,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "LSApplicationQueriesSchemes": ["slido", "completeanatomy", "imaios"]
+        "LSApplicationQueriesSchemes": ["slido", "completeanatomy", "imaios"],
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
       }
     },
     "android": {
@@ -22,7 +31,8 @@
         "backgroundColor": "#000000"
       },
       "package": "com.cjtaylormade.ali2026",
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "screenOrientation": "landscape"
     },
     "web": {
       "bundler": "metro",
