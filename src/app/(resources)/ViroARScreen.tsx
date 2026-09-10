@@ -12,7 +12,7 @@ import {
     ViroSpotLight,
 } from '@reactvision/react-viro';
 import { Directory, File, Paths } from 'expo-file-system';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Dimensions, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View, ViewProps } from 'react-native';
 
@@ -72,7 +72,7 @@ const configureMeshMaterials = (meshNames?: string[]) => {
   return ['defaultMaterial'];
 };
 
-// Download model to local file system
+// Download model to local file system with caching
 const downloadModel = async (
   uri: string, 
   onProgress: (progress: number) => void
@@ -84,7 +84,19 @@ const downloadModel = async (
       destination.create();
     }
 
-    console.log('Downloading model:', uri);
+    // Generate a cache filename from the URL
+    const urlParts = uri.split('/');
+    const filename = urlParts[urlParts.length - 1] || 'model.glb';
+    const cachedFile = new File(destination, filename);
+
+    // Check if file already exists in cache
+    if (cachedFile.exists) {
+      console.log('✅ Model found in cache:', cachedFile.uri);
+      onProgress(1); // Set progress to 100%
+      return cachedFile.uri;
+    }
+
+    console.log('⬇️ Downloading model from server:', uri);
     
     const result = await File.downloadFileAsync(uri, destination, {
       idempotent: true, // Overwrite if file exists
@@ -94,10 +106,10 @@ const downloadModel = async (
       throw new Error('Download failed - no URI in result');
     }
 
-    console.log('Model downloaded successfully:', result.uri);
+    console.log('✅ Model downloaded and cached:', result.uri);
     return result.uri;
   } catch (error) {
-    console.error('Error downloading model:', error);
+    console.error('❌ Error downloading model:', error);
     throw error;
   }
 };
@@ -390,19 +402,14 @@ const MinimalScene: React.FC = () => (
   </ViroARScene>
 );
 
-// Main ViroARScreen component
+// Main ViroARScreen component  
 const ViroARScreen = () => {
   const router = useRouter();
+  const mounted = useRef(true);
   const [localModelUri, setLocalModelUri] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const params = useLocalSearchParams();
-  const modelUri = params.modelUri as string;
-  const mounted = useRef(true);
-  // Minimal scene toggle
-  const [useMinimalScene, setUseMinimalScene] = useState(false);
 
   useEffect(() => {
     // Cleanup function
@@ -412,117 +419,17 @@ const ViroARScreen = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const initializeModel = async () => {
-      if (!modelUri) {
-        setError('No model URI provided');
-        return;
-      }
-
-      try {
-        setIsDownloading(true);
-        setError(null);
-
-        // Validate the model URI
-        if (!modelUri.startsWith('file://') && !modelUri.startsWith('https://')) {
-          throw new Error('Invalid model URI format');
-        }
-
-        // If the URI is already a local file, use it directly
-        if (modelUri.startsWith('file://')) {
-          if (mounted.current) {
-            setLocalModelUri(modelUri);
-          }
-          return;
-        }
-
-        // Download the model if it's a remote URL
-        const localUri = await downloadModel(modelUri, (progress) => {
-          if (mounted.current) {
-            setDownloadProgress(progress);
-          }
-        });
-
-        if (mounted.current) {
-          setLocalModelUri(localUri);
-        }
-      } catch (error) {
-        console.error('Error initializing model:', error);
-        if (mounted.current) {
-          setError(getErrorMessage(error));
-        }
-      } finally {
-        if (mounted.current) {
-          setIsDownloading(false);
-        }
-      }
-    };
-
-    initializeModel();
-  }, [modelUri]);
-
-  const handleLoadStart = () => {
-    if (mounted.current) {
-      setIsLoading(true);
-      setError(null);
-    }
-  };
-
-  const handleLoadEnd = () => {
-    if (mounted.current) {
-      setIsLoading(false);
-    }
-  };
-
-  const handleError = (error: unknown) => {
-    console.error('AR Scene error:', error);
-    if (mounted.current) {
-      setError(getErrorMessage(error));
-      setIsLoading(false);
-    }
-  };
-
   const handleBack = () => {
     router.back();
   };
 
-  if (!localModelUri && !isDownloading && !error) {
-    return (
-      <View style={styles.container}>
-        <LoadingIndicator message="Initializing AR..." />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>{error}</Text>
-
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      {useMinimalScene ? (
-        <ViroARSceneNavigator
-          key="minimal"
-          autofocus={true}
-          initialScene={{ scene: MinimalScene as any }}
-          style={styles.arView}
-        />
-      ) : (
-        localModelUri && (
-          <ViroARSceneNavigator
-            key="model"
-            autofocus={true}
-            initialScene={{ scene: ARScene as any }}
-            viroAppProps={{ modelUri: localModelUri }}
-            style={styles.arView}
-          />
-        )
-      )}
+      <ViroARSceneNavigator
+        autofocus={true}
+        initialScene={{ scene: MinimalScene as any }}
+        style={styles.arView}
+      />
 
       {/* Back button */}
       <View style={styles.backButtonContainer}>
@@ -535,23 +442,20 @@ const ViroARScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Minimal scene toggle */}
-      <View style={styles.minToggleContainer}>
-        <TouchableOpacity
-          style={styles.minToggleButton}
-          onPress={() => setUseMinimalScene(prev => !prev)}
-        >
-          <Text style={styles.minToggleText}>{useMinimalScene ? 'Model Scene' : 'Minimal Scene'}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {(isLoading || isDownloading) && (
+      {/* Show download progress if downloading */}
+      {isDownloading && (
         <LoadingIndicator
-          progress={isDownloading ? downloadProgress : undefined}
-          message={isDownloading ? "Downloading model..." : "Loading model..."}
+          progress={downloadProgress}
+          message="Downloading model..."
         />
       )}
 
+      {/* Show error if any */}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -639,28 +543,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
-  },
-  minToggleContainer: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 1000,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 25,
-    padding: 5,
-  },
-  minToggleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  minToggleText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
   },
   buttonContainer: {
     position: 'absolute',
