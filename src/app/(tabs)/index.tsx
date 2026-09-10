@@ -1,9 +1,9 @@
-import { StyleSheet, Image, View, Text } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 export default function TabHomeScreen() {
   return (
     <View style={styles.container}>
-      <Image source={require('@/assets/images/bsmsLogoW.png')} style={styles.IconStyle} />
+      <Image source={require('@/assets/images/Asset_8.png')} style={styles.IconStyle} />
       <Text style={styles.subtitleText}>Welcome to the BSMS Anatomy Learning Interface</Text>
       <Text style={styles.subtitleText}>The dissection table companion</Text>
       <View style={styles.separator} />

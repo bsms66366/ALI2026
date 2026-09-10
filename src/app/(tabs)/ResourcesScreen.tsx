@@ -155,7 +155,7 @@ export default function ResourcesScreen() {
           </TouchableOpacity>
         </View>
         <View style={createBoxBorderStyle(height, width, insets)}>
-          <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://www.spatial.io/s/BSMS-Anatomy-Department-Metaverse-63f1222446f222d934f1f54c?share=4830808449733533739')}>
+          <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://brighton.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=ced1312b-bdb9-4623-aa37-b4c001134a06')}>
             <Image source={require('@/assets/images/interfaceIcons_Artboard37.png')} style={styles.IconStyle} />
             <Text style={styles.titleText}>Anatomy Metaverse</Text>
           </TouchableOpacity>

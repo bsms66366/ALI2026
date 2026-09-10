@@ -14,7 +14,7 @@ import {
 import { Directory, File, Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Dimensions, ImageSourcePropType, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View, ViewProps } from 'react-native';
+import { ActivityIndicator, Dimensions, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View, ViewProps } from 'react-native';
 
 // Type for mesh loading event
 type ViroMeshLoadedEvent = {
@@ -196,98 +196,110 @@ const ARScene = (props: ARSceneProps) => {
   };
 
   // Handle pinch to zoom with robust detection for both zoom-in and zoom-out
-  const onPinch = (pinchState: ViroPinchStateTypes, scaleFactor: number, source: ImageSourcePropType) => {
-    console.log(`Pinch event: state=${pinchState}, factor=${scaleFactor}, current scale=${scale[0]}`);
-    
-    // Handle pinch start
-    if (pinchState === ViroPinchStateTypes.PINCH_START) {
-      // Check for double-tap reset
-      if (handleDoubleTapReset()) {
-        return; // Exit early if reset was triggered
+  const onPinch = (pinchState: ViroPinchStateTypes, scaleFactor: number, source: any) => {
+    try {
+      console.log(`Pinch event: state=${pinchState}, factor=${scaleFactor}, current scale=${scale[0]}`);
+      
+      // Handle pinch start
+      if (pinchState === ViroPinchStateTypes.PINCH_START) {
+        // Check for double-tap reset
+        if (handleDoubleTapReset()) {
+          return; // Exit early if reset was triggered
+        }
+        
+        // Initialize pinch tracking
+        setLastPinchFactor(scaleFactor);
+        setIsPinching(true);
+        console.log(`🟢 Pinch started with factor: ${scaleFactor}`);
+        return;
       }
       
-      // Initialize pinch tracking
-      setLastPinchFactor(scaleFactor);
-      setIsPinching(true);
-      console.log(`🟢 Pinch started with factor: ${scaleFactor}`);
-      return;
-    }
-    
-    // Handle pinch end
-    if (pinchState === ViroPinchStateTypes.PINCH_END) {
-      setIsPinching(false);
-      setLastPinchFactor(1.0);
-      console.log(`🔴 Pinch ended`);
-      return;
-    }
-    
-    // Handle pinch move - this is where we apply scaling
-    if (pinchState === ViroPinchStateTypes.PINCH_MOVE && isPinching) {
-      
-      // Calculate the change in pinch factor since last frame
-      const factorDelta = scaleFactor / lastPinchFactor;
-      console.log(`📏 Factor delta: ${factorDelta} (current: ${scaleFactor}, last: ${lastPinchFactor})`);
-      
-      // Apply the delta with smoothing
-      const smoothedFactor = 1 + (factorDelta - 1) * 0.3; // Light smoothing
-      
-      console.log(`🎯 Smoothed factor: ${smoothedFactor}, will multiply scale ${scale[0]} by ${smoothedFactor}`);
-      
-      // Calculate new scale
-      const newScale: [number, number, number] = [
-        scale[0] * smoothedFactor, 
-        scale[1] * smoothedFactor, 
-        scale[2] * smoothedFactor
-      ];
-      
-      console.log(`📐 Calculated new scale: ${newScale[0]}`);
-      
-      // Very generous scale limits
-      const MIN_SCALE = 0.0001;
-      const MAX_SCALE = 5.0;
-      
-      // Apply scale if within limits
-      if (newScale[0] >= MIN_SCALE && newScale[0] <= MAX_SCALE) {
-        setScale(newScale);
-        console.log(`✅ Scale successfully updated to: ${newScale[0]}`);
-      } else {
-        console.log(`❌ Scale ${newScale[0]} outside limits [${MIN_SCALE}, ${MAX_SCALE}]`);
+      // Handle pinch end
+      if (pinchState === ViroPinchStateTypes.PINCH_END) {
+        setIsPinching(false);
+        setLastPinchFactor(1.0);
+        console.log(`🔴 Pinch ended`);
+        return;
       }
       
-      // Update last pinch factor for next frame
-      setLastPinchFactor(scaleFactor);
+      // Handle pinch move - this is where we apply scaling
+      if (pinchState === ViroPinchStateTypes.PINCH_MOVE && isPinching) {
+        
+        // Calculate the change in pinch factor since last frame
+        const factorDelta = scaleFactor / lastPinchFactor;
+        console.log(`📏 Factor delta: ${factorDelta} (current: ${scaleFactor}, last: ${lastPinchFactor})`);
+        
+        // Apply the delta with smoothing
+        const smoothedFactor = 1 + (factorDelta - 1) * 0.3; // Light smoothing
+        
+        console.log(`🎯 Smoothed factor: ${smoothedFactor}, will multiply scale ${scale[0]} by ${smoothedFactor}`);
+        
+        // Calculate new scale
+        const newScale: [number, number, number] = [
+          scale[0] * smoothedFactor, 
+          scale[1] * smoothedFactor, 
+          scale[2] * smoothedFactor
+        ];
+        
+        console.log(`📐 Calculated new scale: ${newScale[0]}`);
+        
+        // Very generous scale limits
+        const MIN_SCALE = 0.0001;
+        const MAX_SCALE = 5.0;
+        
+        // Apply scale if within limits
+        if (newScale[0] >= MIN_SCALE && newScale[0] <= MAX_SCALE) {
+          setScale(newScale);
+          console.log(`✅ Scale successfully updated to: ${newScale[0]}`);
+        } else {
+          console.log(`❌ Scale ${newScale[0]} outside limits [${MIN_SCALE}, ${MAX_SCALE}]`);
+        }
+        
+        // Update last pinch factor for next frame
+        setLastPinchFactor(scaleFactor);
+      }
+    } catch (error) {
+      console.error('Error in onPinch:', error);
     }
   };
 
   // Handle drag to move
-  const onDrag = (draggedToPosition: [number, number, number], source: ImageSourcePropType) => {
-    console.log(`Drag event: position=[${draggedToPosition}]`);
-    
-    if (draggedToPosition) {
-      // Apply the position change immediately for better responsiveness
-      setPosition(draggedToPosition);
+  const onDrag = (draggedToPosition: [number, number, number], source: any) => {
+    try {
+      console.log(`Drag event: position=[${draggedToPosition}]`);
+      
+      if (draggedToPosition) {
+        // Apply the position change immediately for better responsiveness
+        setPosition(draggedToPosition);
+      }
+    } catch (error) {
+      console.error('Error in onDrag:', error);
     }
   };
 
   // Handle rotation with improved sensitivity
-  const onRotate = (rotateState: ViroRotateStateTypes, rotationFactor: number, source: ImageSourcePropType) => {
-    console.log(`Rotate event: state=${rotateState}, factor=${rotationFactor}`);
-    
-    if (rotateState === ViroRotateStateTypes.ROTATE_START ||
-        rotateState === ViroRotateStateTypes.ROTATE_MOVE ||
-        rotateState === ViroRotateStateTypes.ROTATE_END) {
+  const onRotate = (rotateState: ViroRotateStateTypes, rotationFactor: number, source: any) => {
+    try {
+      console.log(`Rotate event: state=${rotateState}, factor=${rotationFactor}`);
       
-      // Improved rotation with better sensitivity and smoothing
-      const sensitivity = 45; // Degrees per unit (was ~57.3)
-      const smoothedRotation = rotationFactor * 0.7; // Dampen by 30% for smoother rotation
-      
-      const newRotation: [number, number, number] = [
-        rotation[0], 
-        rotation[1] + (smoothedRotation * sensitivity),
-        rotation[2]
-      ];
-      
-      setRotation(newRotation);
+      if (rotateState === ViroRotateStateTypes.ROTATE_START ||
+          rotateState === ViroRotateStateTypes.ROTATE_MOVE ||
+          rotateState === ViroRotateStateTypes.ROTATE_END) {
+        
+        // Improved rotation with better sensitivity and smoothing
+        const sensitivity = 45; // Degrees per unit (was ~57.3)
+        const smoothedRotation = rotationFactor * 0.7; // Dampen by 30% for smoother rotation
+        
+        const newRotation: [number, number, number] = [
+          rotation[0], 
+          rotation[1] + (smoothedRotation * sensitivity),
+          rotation[2]
+        ];
+        
+        setRotation(newRotation);
+      }
+    } catch (error) {
+      console.error('Error in onRotate:', error);
     }
   };
 
@@ -390,7 +402,7 @@ const ViroARScreen = () => {
   const modelUri = params.modelUri as string;
   const mounted = useRef(true);
   // Minimal scene toggle
-  const [useMinimalScene, setUseMinimalScene] = useState(true);
+  const [useMinimalScene, setUseMinimalScene] = useState(false);
 
   useEffect(() => {
     // Cleanup function

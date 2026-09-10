@@ -11,10 +11,16 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cjtaylormade.ali2026",
-      "requireFullScreen": false,
+      "requireFullScreen": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "LSApplicationQueriesSchemes": ["slido", "completeanatomy", "imaios"],
+        "LSApplicationQueriesSchemes": [
+          "slido",
+          "completeanatomy",
+          "imaios"
+        ],
+        "RVApiKey": "NOT_USED",
+        "RVProjectId": "NOT_USED",
         "UISupportedInterfaceOrientations": [
           "UIInterfaceOrientationLandscapeLeft",
           "UIInterfaceOrientationLandscapeRight"
@@ -54,7 +60,8 @@
         {
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera for QR scanning and AR features.",
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for video recording.",
-          "recordAudioAndroid": true
+          "recordAudioAndroid": true,
+          "barcodeScannerEnabled": true
         }
       ],
       [
@@ -62,16 +69,26 @@
         {
           "android": {
             "xRMode": "AR"
+          },
+          "ios": {
+            "cameraUsagePermission": "Allow $(PRODUCT_NAME) to use your camera for AR experiences",
+            "microphoneUsagePermission": "Allow $(PRODUCT_NAME) to use your microphone for AR experiences",
+            "photosPermission": "Allow $(PRODUCT_NAME) to access your photos for AR experiences",
+            "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos to your library during AR experiences"
           }
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "assetBundlePatterns": ["assets/models/*", "assets/images/*"],
+    "assetBundlePatterns": [
+      "assets/models/*",
+      "assets/images/*"
+    ],
     "extra": {
       "router": {
         "origin": false

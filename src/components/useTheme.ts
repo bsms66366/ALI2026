@@ -1,3 +1,4 @@
+import * as SecureStore from "expo-secure-store";
 import { useEffect } from "react";
 import { useColorScheme as useNativeColorScheme } from "react-native";
 import { create } from "zustand";
@@ -9,9 +10,9 @@ type ThemeStore = {
 
 const useThemeStore = create<ThemeStore>((set) => ({
   theme: "system",
-  setTheme: (theme) => {
+  setTheme: async (theme) => {
     set({ theme });
-    AsyncStorage.setItem("theme", theme);
+    await SecureStore.setItemAsync("theme", theme);
   },
 }));
 
@@ -21,7 +22,7 @@ export function useTheme() {
 
   // Load saved theme on mount
   useEffect(() => {
-    AsyncStorage.getItem("theme").then((savedTheme) => {
+    SecureStore.getItemAsync("theme").then((savedTheme) => {
       if (
         savedTheme &&
         (savedTheme === "light" ||

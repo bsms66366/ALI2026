@@ -309,6 +309,7 @@ const ModelFetchScreen = () => {
         visible={showScanner}
         animationType="slide"
         onRequestClose={() => setShowScanner(false)}
+        supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
       >
         <View style={styles.scannerContainer}>
           <View style={styles.scannerHeader}>
@@ -340,7 +341,7 @@ const ModelFetchScreen = () => {
             </View>
           ) : (
             <CameraView
-              style={StyleSheet.absoluteFillObject}
+              style={StyleSheet.absoluteFill}
               facing="back"
               barcodeScannerSettings={{
                 barcodeTypes: ['qr'],
