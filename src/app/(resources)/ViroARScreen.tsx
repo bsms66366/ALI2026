@@ -535,16 +535,6 @@ const ViroARScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Minimal scene toggle */}
-      <View style={styles.minToggleContainer}>
-        <TouchableOpacity
-          style={styles.minToggleButton}
-          onPress={() => setUseMinimalScene(prev => !prev)}
-        >
-          <Text style={styles.minToggleText}>{useMinimalScene ? 'Model Scene' : 'Minimal Scene'}</Text>
-        </TouchableOpacity>
-      </View>
-
       {(isLoading || isDownloading) && (
         <LoadingIndicator
           progress={isDownloading ? downloadProgress : undefined}
@@ -639,28 +629,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
-  },
-  minToggleContainer: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 1000,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 25,
-    padding: 5,
-  },
-  minToggleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  minToggleText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
   },
   buttonContainer: {
     position: 'absolute',
