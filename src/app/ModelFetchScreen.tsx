@@ -72,28 +72,14 @@ const ModelFetchScreen = () => {
         destination.create();
       }
       
-      // Generate a cache filename from the URL
-      const urlParts = modelUrl.split('/');
-      const filename = urlParts[urlParts.length - 1] || 'model.glb';
-      const cachedFile = new File(destination, filename);
-
-      // Check if file already exists in cache
-      if (cachedFile.exists) {
-        console.log('✅ Model found in cache:', cachedFile.uri);
-        setShowScanner(false);
-        await navigateToARScreen(cachedFile.uri, 'qr_scan');
-        return;
-      }
-
       // Download the model with progress tracking
-      console.log('⬇️ Downloading model from server:', modelUrl);
+      console.log('Downloading model from URL:', modelUrl);
       
       const result = await File.downloadFileAsync(modelUrl, destination, {
         idempotent: true, // Overwrite if file exists
       });
       
       if (result && result.exists) {
-        console.log('✅ Model downloaded and cached:', result.uri);
         setShowScanner(false);
         await navigateToARScreen(result.uri, 'qr_scan');
       } else {
@@ -274,24 +260,14 @@ const ModelFetchScreen = () => {
         description: selectedModel.description
       }));
 
-      // Check if file already exists in cache
-      const cachedFile = new File(destination, originalFilename);
-      if (cachedFile.exists) {
-        console.log('✅ Model found in cache:', cachedFile.uri);
-        setDownloadProgress(1); // Set to 100%
-        navigateToARScreen(cachedFile.uri, 'model_fetch');
-        return;
-      }
-
       // Download the model
-      console.log('⬇️ Downloading model from server:', selectedModel.url);
+      console.log('Downloading model from URL:', selectedModel.url);
 
       const result = await File.downloadFileAsync(selectedModel.url, destination, {
         idempotent: true, // Overwrite if file exists
       });
       
       if (result && result.exists) {
-        console.log('✅ Model downloaded and cached:', result.uri);
         navigateToARScreen(result.uri, 'model_fetch');
       } else {
         throw new Error('Download failed');
